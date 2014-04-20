@@ -89,40 +89,45 @@ traindata<-get_data(dir, 'train')
 #combine into a single dataframe
 alldata <-rbind(traindata,testdata)
 
-#optionally - makes no diff to the task - force certain columns to Factors
-#
-alldata$Subject<-as.factor(alldata$Subject)
-alldata$Activity<-as.factor(alldata$Activity)
-alldata$ActivityName<-as.factor(alldata$ActivityName)
-
-#summary(alldata$Subject)
-#summary(alldata$Activity)
-#summary(alldata$ActivityName)
-
 #Step3/4 done
 #Save the combined file to a csv file for submission or later use
 write.csv(alldata, file='alldata.csv', row.names=FALSE)
 
-#step
-#5.Creates a second, independent tidy data set with the average of each variable for each activity and each subject.
-#see http://stackoverflow.com/questions/11007813/r-row-means-on-multiple-columns-by-groups-or-unique-ids
-# or rfm.
 
-library(data.table)
-alldata.DT <- data.table(alldata)
-setkey(alldata.DT, Subject,ActivityName)
-#tables()
+#Step 5.Creates a second, independent tidy data set with the average of each variable for each activity and each subject.
+#approach taken is to use data.table
+
+
+#    A. Meaningless to take mean of std() cols
+#         so for fun remove them.
+#         and then the mean of the means will be calculated
+
+#only want to keep the Activity|ActivityName and the columns with mean ()
+#so build a dataframe of the columns in the alldata
+#
+alldataCols<-as.data.frame(colnames(alldata))
+colnames(alldataCols)<-c('Name')
+alldataCols$Number<-as.numeric(row.names(alldataCols))
+#
+#and add a Keep(er) column  using regex 
+alldataCols$Keep<-grepl('-mean\\(|Subject|Activity|ActivityName', alldataCols$Name , ignore.case=TRUE, fixed=FALSE, perl=TRUE)
+#
+#reduce down to the these Kept columns
+alldata2<-alldata[ , alldataCols$Number[ which(alldataCols$Keep==TRUE)]]
+
+#    B. use a data.table approach to get the means accross this reduced table
+#
+alldata2.DT <- data.table(alldata2)
+setkey(alldata2.DT, Subject,ActivityName)
 
 #from data.table help
 #.SD is constructed as containing the Subset of x's Data for each group, excluding any columns used in by
 #lapply signature is lapply(X, FUN, ...) where X is data to apply FUN on
-# so lapply(.SD,mean) get the columns one by one and applies the mean()
+# lapply(.SD,mean) gets the columns one by one and applies the mean()
 #
+#the result is the mean of the means from the alldata dataframe so
+alldata.MeanMeans <- alldata2.DT[, lapply(.SD,mean), by=list(Subject,ActivityName)]
 
-res<-alldata.DT[, lapply(.SD,mean), by=list(Subject,ActivityName)]
-
-
-
-
-
+#Save the summary file to a csv file for submission or later use
+write.csv(alldata.MeanMeans, file='alldata.MeanMeans.csv', row.names=FALSE)
 
