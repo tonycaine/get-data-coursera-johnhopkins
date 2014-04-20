@@ -43,6 +43,9 @@ get_data <- function(basepath, set_type ){
   colnames(subjectdata)<-c('Subject')
   colnames(activitydata)<-c('Activity')
   #
+  #add in the activitynames with the Activity codes
+  activitydata <-merge(activitydata, activities, sort=FALSE) #sort=FALSE so keep order Default is sort=TRUE
+  
   #apply the Feature names to the Data - before delete unwanted columns
   colnames(data)<-features[,'VariableName']
   #reduce down to the means and std columns
