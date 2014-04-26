@@ -6,9 +6,6 @@
 library(plyr)
 library(data.table)
 
-#zips extracted to this location
-#and 'dir' is used to build paths to data to load
-dir<-'C:/_store/@stats/data-course/get-data/assessment/data/UCI HAR Dataset'
 
 #load the features file - contains the column index and title of all the movement data
 #
@@ -75,6 +72,10 @@ get_data <- function(basepath, set_type ){
 
 #main routine starts here
 
+#zips extracted to this location
+#and 'dir' is used to build paths to data to load
+dir<-'C:/_store/@stats/data-course/get-data/assessment/data/UCI HAR Dataset'
+
 #load the features information to use to label the data columns
 features<-get_features(dir)
 #load info about the activities
@@ -98,13 +99,14 @@ write.csv(alldata, file='alldata.csv', row.names=FALSE)
 #approach taken is to use data.table
 
 
-#    A. Meaningless to take mean of std() cols
-#         so for fun remove them.
-#         and then the mean of the means will be calculated
+#    A. As it really is meaningless to take mean of std() cols
+#         1. for fun remove them, and 
+#         2. then the mean of the means will be calculated
 
-#only want to keep the Activity|ActivityName and the columns with mean ()
-#so build a dataframe of the columns in the alldata
-#
+#To do this only want to keep the columsn for Subject, Activity, ActivityName and the columns with mean ()
+# then build a new dataframe of the columns from the requred columns in the alldata
+# Call this new dataframe 'alldata2' as it is the second data set for submission.
+
 alldataCols<-as.data.frame(colnames(alldata))
 colnames(alldataCols)<-c('Name')
 alldataCols$Number<-as.numeric(row.names(alldataCols))
@@ -113,6 +115,7 @@ alldataCols$Number<-as.numeric(row.names(alldataCols))
 alldataCols$Keep<-grepl('-mean\\(|Subject|Activity|ActivityName', alldataCols$Name , ignore.case=TRUE, fixed=FALSE, perl=TRUE)
 #
 #reduce down to the these Kept columns
+#forming the second required data set.
 alldata2<-alldata[ , alldataCols$Number[ which(alldataCols$Keep==TRUE)]]
 
 #    B. use a data.table approach to get the means accross this reduced table
