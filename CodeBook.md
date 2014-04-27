@@ -1,6 +1,6 @@
 # Assessment Task CodeBook.md - tonycaine
 
-Task is described in [(readme.md)](README.md).
+Task is described in [(README.md)](README.md).
 
 The workflow of the two parts are described in more detail below.
 Below that are details regarding the files loaded, dataframes and other variables created. 
